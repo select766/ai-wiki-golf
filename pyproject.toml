@@ -1,0 +1,23 @@
+[project]
+name = "ai-wiki-golf"
+version = "0.1.0"
+description = "Wikipedia golf assistant powered by LLMs"
+authors = [{ name = "Codex Assistant", email = "codex@example.com" }]
+requires-python = ">=3.12"
+dependencies = [
+    "typer[all]",
+    "pyyaml",
+    "requests",
+    "python-dotenv",
+    "openai>=1.45.0",
+    "google-generativeai",
+    "gradio",
+    "rich",
+]
+
+[project.scripts]
+ai-wiki-golf = "ai_wiki_golf.cli:app"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
