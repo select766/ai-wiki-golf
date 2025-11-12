@@ -31,7 +31,7 @@ class GameOutcome:
 # TODO: exclude_digit_links の場合、そのことをプロンプトにも記載
 
 class WikipediaGolfRunner:
-    BOOK_CHAR_LIMIT = 1000
+    BOOK_CHAR_LIMIT = 2000
 
     def __init__(self, config: ExperimentConfig, llm: BaseLLMClient):
         self.config = config
@@ -118,7 +118,7 @@ class WikipediaGolfRunner:
                 correction_prompt = (
                     f"\n「{move or '不明'}」は選択肢に存在しません。"
                     f"選択肢: {'|'.join(candidates)}。\n"
-                    "ゴールに近づくため、次に移動するページを選択肢から1つだけ選んでください。1行目に『考察: 検討過程』、2行目に『移動先: 選択肢』としてください。"
+                    "ゴールに近づくため、次に移動するページを選択肢から1つだけ選んでください。1行目に『考察: 検討過程(100文字まで)』、2行目に『移動先: 選択肢』としてください。"
                 )
                 messages.append({"role": "user", "content": correction_prompt})
                 retry_result = self.llm.generate(messages)
@@ -222,7 +222,7 @@ class WikipediaGolfRunner:
         if goal_description:
             parts.append(goal_description.rstrip())
         parts.append(
-            "ゴールに近づくため、次に移動するページを選択肢から1つだけ選んでください。1行目に『考察: 検討過程』、2行目に『移動先: 選択肢』としてください。"
+            "ゴールに近づくため、次に移動するページを選択肢から1つだけ選んでください。1行目に『考察: 検討過程(100文字まで)』、2行目に『移動先: 選択肢』としてください。"
         )
         return "\n".join(parts)
 
