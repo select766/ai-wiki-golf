@@ -37,6 +37,7 @@ class GameOutcome:
 
 class WikipediaGolfRunner:
     BOOK_CHAR_LIMIT = 2000
+    LINK_SAMPLE_SEED = 20251113
 
     def __init__(self, config: ExperimentConfig, llm: BaseLLMClient):
         self.config = config
@@ -206,15 +207,16 @@ class WikipediaGolfRunner:
         if include_intro:
             parts.append(
                 "あなたはWikipediaゴルフのプレイヤーです。\n"
-                "ルール:\n"
+                "基本ルール:\n"
                 "- スタートとゴールのWikipediaページの間をリンクだけで移動します。\n"
                 "- 1ターンでできることは、現在のページからリンクされたページ、または過去に訪れたページへ戻ること。\n"
                 "- 20ターン以内にゴールへ到達できない場合は失敗。\n"
+                f"- 提示されるリンク数は最大{self.config.game.max_links}個。これ以上存在する場合はランダムに選ばれる。\n"
             )
             guide_section = guide_text.strip()
             parts.append("攻略本:\n" + guide_section)
             parts.append(
-                "ルール:\n"
+                "行動のルール:\n"
                 "- 訪問済みページへ戻るか、現在のページのリンクから1つを選ぶ。\n"
                 "- 簡潔に考察し、最後の行は『移動先: 候補名』とする。"
             )
@@ -272,7 +274,14 @@ class WikipediaGolfRunner:
         past = list(dict.fromkeys(reversed(history[:-1])))
         links = get_links(current) or []
         filtered_links = [link for link in links if self._allowed_link(link)]
-        limited_links = filtered_links[: self.config.game.max_links]
+        max_links = self.config.game.max_links
+        if max_links > 0 and len(filtered_links) > max_links:
+            # Reinitialize a deterministic RNG each time before sampling.
+            sampler = random.Random(self.LINK_SAMPLE_SEED)
+            sampled_links = sampler.sample(filtered_links, max_links)
+            limited_links = sorted(sampled_links)
+        else:
+            limited_links = filtered_links[:]
         seen = set()
         ordered: list[str] = []
         for item in past + limited_links:
