@@ -23,6 +23,7 @@ class GameConfig:
     exclude_digit_links: bool = True
     retry_limit: int = 3
     include_goal_abstract: bool = False
+    min_goal_backlinks: int = 1
 
 
 @dataclass

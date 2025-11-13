@@ -48,6 +48,7 @@ game:
   max_links: 100
   exclude_digit_links: true
   retry_limit: 3
+  min_goal_backlinks: 1
 loop:
   iterations: 3
 ```
@@ -92,3 +93,4 @@ cost:
 - LLMプロンプトではゲームルール・攻略本・現在状態を毎ターン提示し、最後の行で `移動先: XXX` を必須化
 - 失敗時スコアは 9999、候補はリンク100件＋過去訪問の順で提示します
 - 攻略本は常に日本語1000文字以内にトリミングされ、オーバー時は再生成を依頼します
+- ゴールページは `min_goal_backlinks` で指定したバックリンク数以上のページのみ採用します（デフォルト: 1）

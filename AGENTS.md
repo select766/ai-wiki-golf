@@ -67,7 +67,7 @@ cost:
 
 ## 設定項目 (config.yaml)
 - `llm`: provider(openrouter|gemini)、model、options(temperature, max_output_tokens 等)。OpenRouter利用時は base_url 指定可。
-- `game`: `max_steps`、`max_links`、`exclude_digit_links`、`include_goal_abstract`、`retry_limit` などルール設定。
+- `game`: `max_steps`、`max_links`、`exclude_digit_links`、`include_goal_abstract`、`retry_limit`、`min_goal_backlinks` などルール設定。
 - `loop`: `iterations`、`seed`。
 - `evaluation_pairs`: 省略時は `experiments/<name>/evaluation_pairs.yaml` または `data/eval_pairs.yaml` を使用。
 
@@ -86,6 +86,7 @@ cost:
 - **LLMドライバ** (`src/ai_wiki_golf/llm.py`): OpenRouter(OpenAI SDK互換)とGeminiを統一インターフェースで呼び出し。OpenRouterでは `max_output_tokens`→`max_tokens` 変換、Geminiでは quota 超過時の指数バックオフと複数回リトライを実装。
 - **Wikipedia API** (`src/ai_wiki_golf/mediawiki.py`): ランダムページ、リンク一覧、概要を取得。固定User-Agentでアクセスし、欠損ページや100件超のリンクをハンドリング。
 - **ゲームランナー** (`src/ai_wiki_golf/game.py`): 候補生成時に過去ページを優先列挙し、`exclude_digit_links` を正規表現で適用。1ターン目のみルール+攻略本を提示し、`移動先:` の抽出は最後に出現した行を採用。終了後は攻略本更新と長すぎる出力の再生成を行う。
+- ゴール選定時には `min_goal_backlinks` で指定されたバックリンク数以上のページになるまで再抽選する。
 - **実験制御** (`src/ai_wiki_golf/experiment.py`): `.env` とプロジェクト直下 `.env` を `python-dotenv` で読み込み、ループ結果を `books/` `logs/` に保存。
 - **評価** (`src/ai_wiki_golf/evaluation.py`): 指定攻略本バージョンを評価ペアで実行し、結果を YAML へ。
 - **可視化** (`src/ai_wiki_golf/visualize.py`): Gradio でログ一覧→詳細→チャット/攻略本閲覧を提供。

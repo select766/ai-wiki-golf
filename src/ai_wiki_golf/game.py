@@ -7,7 +7,12 @@ from typing import Any, Iterable
 
 from .config import ExperimentConfig
 from .llm import BaseLLMClient, LLMResult
-from .mediawiki import get_links, get_page_abstract, get_random_pages
+from .mediawiki import (
+    get_backlink_count,
+    get_links,
+    get_page_abstract,
+    get_random_pages,
+)
 
 
 @dataclass
@@ -252,10 +257,16 @@ class WikipediaGolfRunner:
         )
 
     def _choose_start_goal(self) -> tuple[str, str]:
+        min_backlinks = max(0, self.config.game.min_goal_backlinks)
         while True:
             pages = get_random_pages(limit=2)
             if len(pages) == 2 and pages[0] != pages[1]:
-                return pages[0], pages[1]
+                start, goal = pages[0], pages[1]
+                if min_backlinks <= 0:
+                    return start, goal
+                goal_backlinks = get_backlink_count(goal)
+                if goal_backlinks >= min_backlinks:
+                    return start, goal
 
     def _build_candidates(self, current: str, history: list[str]) -> list[str]:
         past = list(dict.fromkeys(reversed(history[:-1])))

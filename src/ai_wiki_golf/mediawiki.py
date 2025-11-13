@@ -75,3 +75,26 @@ def get_links(title: str) -> Optional[list[str]]:
         else:
             break
     return page_links.get(title, [])
+
+
+def get_backlink_count(title: str) -> int:
+    query = {
+        "action": "query",
+        "format": "json",
+        "list": "backlinks",
+        "bltitle": title,
+        "blnamespace": 0,
+        "bllimit": 500,
+    }
+    count = 0
+    while True:
+        resp = requests.get(API_URL, query, headers=HEADERS, timeout=30)
+        result = resp.json()
+        backlinks = result.get("query", {}).get("backlinks", [])
+        count += len(backlinks)
+        if cont := result.get("continue"):
+            query.update(cont)
+        else:
+            break
+
+    return count
