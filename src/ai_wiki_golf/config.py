@@ -33,11 +33,27 @@ class LoopConfig:
 
 
 @dataclass
+class WikiConfig:
+    name: str = "Wikipedia"
+    base_url: str = "https://ja.wikipedia.org"
+
+    @property
+    def api_url(self) -> str:
+        base = self.base_url.rstrip("/")
+        if base.endswith("api.php"):
+            return base
+        if base.endswith("/w"):
+            return f"{base}/api.php"
+        return f"{base}/w/api.php"
+
+
+@dataclass
 class ExperimentConfig:
     llm: LLMConfig
     game: GameConfig = field(default_factory=GameConfig)
     loop: LoopConfig = field(default_factory=LoopConfig)
     evaluation_pairs: list[dict[str, str]] | None = None
+    wiki: WikiConfig = field(default_factory=WikiConfig)
 
     @classmethod
     def load(cls, path: Path) -> "ExperimentConfig":
@@ -48,7 +64,14 @@ class ExperimentConfig:
         game_cfg = GameConfig(**config_dict.get("game", {}))
         loop_cfg = LoopConfig(**config_dict.get("loop", {}))
         evaluation_pairs = config_dict.get("evaluation_pairs")
-        return cls(llm=llm_cfg, game=game_cfg, loop=loop_cfg, evaluation_pairs=evaluation_pairs)
+        wiki_cfg = WikiConfig(**config_dict.get("wiki", {}))
+        return cls(
+            llm=llm_cfg,
+            game=game_cfg,
+            loop=loop_cfg,
+            evaluation_pairs=evaluation_pairs,
+            wiki=wiki_cfg,
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -56,4 +79,5 @@ class ExperimentConfig:
             "game": self.game.__dict__,
             "loop": self.loop.__dict__,
             "evaluation_pairs": self.evaluation_pairs,
+            "wiki": self.wiki.__dict__,
         }

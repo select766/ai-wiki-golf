@@ -51,9 +51,15 @@ game:
   min_goal_backlinks: 1
 loop:
   iterations: 3
+
+wiki:
+  name: ポケモンWiki
+  base_url: https://wiki.xn--rckteqa2e.com/
 ```
 
 `evaluation_pairs` を `config.yaml` へ直接記載するか、`experiments/<name>/evaluation_pairs.yaml` もしくは `data/eval_pairs.yaml` (同梱) を利用します。
+
+`wiki` セクションは任意です。省略時は日本語版Wikipedia (`https://ja.wikipedia.org`) を使用します。別のMediaWikiサイトを指定する場合は、任意の名称 (`name`) とベースURL (`base_url`, 末尾スラッシュ可) を記入してください。APIエンドポイントは自動的に `<base_url>/w/api.php` （または `base_url` が `api.php` で終わっていればそのまま）に変換され、初回ターンと初期攻略本プロンプトには「Wikipediaではなく{name}を使用する」旨の注意書きが追加されます。
 
 ## コマンド
 すべて `ai-wiki-golf` CLI から実行します。

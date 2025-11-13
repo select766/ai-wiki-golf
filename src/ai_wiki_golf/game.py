@@ -7,12 +7,7 @@ from typing import Any, Iterable
 
 from .config import ExperimentConfig
 from .llm import BaseLLMClient, LLMResult
-from .mediawiki import (
-    get_backlink_count,
-    get_links,
-    get_page_abstract,
-    get_random_pages,
-)
+from .mediawiki import MediaWikiClient
 
 
 @dataclass
@@ -43,6 +38,9 @@ class WikipediaGolfRunner:
         self.config = config
         self.llm = llm
         self.rng = random.Random(config.loop.seed)
+        self.wiki_client = MediaWikiClient(config.wiki.api_url)
+        self.wiki_name = config.wiki.name
+        self._wiki_notice = self._build_wiki_notice(self.wiki_name)
 
     def generate_initial_book(self) -> tuple[str, list[dict[str, str]], dict[str, Any]]:
         prompt = (
@@ -54,6 +52,8 @@ class WikipediaGolfRunner:
             "- 前向きなトーンで簡潔に。\n"
             "攻略本のみを出力し、余分な文章を含めないでください。"
         )
+        if self._wiki_notice:
+            prompt += f"\n{self._wiki_notice}"
         messages = [{"role": "user", "content": prompt}]
         result = self.llm.generate(messages)
         usage = _merge_usage({}, result.usage)
@@ -82,7 +82,7 @@ class WikipediaGolfRunner:
         success = False
         goal_abstract: str | None = None
         if self.config.game.include_goal_abstract:
-            goal_abstract = get_page_abstract(goal)
+            goal_abstract = self.wiki_client.get_page_abstract(goal)
 
         for turn in range(1, self.config.game.max_steps + 1):
             current = history[-1]
@@ -213,6 +213,8 @@ class WikipediaGolfRunner:
                 "- 20ターン以内にゴールへ到達できない場合は失敗。\n"
                 f"- 提示されるリンク数は最大{self.config.game.max_links}個。これ以上存在する場合はランダムに選ばれる。\n"
             )
+            if self._wiki_notice:
+                parts.append(self._wiki_notice)
             guide_section = guide_text.strip()
             parts.append("攻略本:\n" + guide_section)
             parts.append(
@@ -261,18 +263,18 @@ class WikipediaGolfRunner:
     def _choose_start_goal(self) -> tuple[str, str]:
         min_backlinks = max(0, self.config.game.min_goal_backlinks)
         while True:
-            pages = get_random_pages(limit=2)
+            pages = self.wiki_client.get_random_pages(limit=2)
             if len(pages) == 2 and pages[0] != pages[1]:
                 start, goal = pages[0], pages[1]
                 if min_backlinks <= 0:
                     return start, goal
-                goal_backlinks = get_backlink_count(goal)
+                goal_backlinks = self.wiki_client.get_backlink_count(goal)
                 if goal_backlinks >= min_backlinks:
                     return start, goal
 
     def _build_candidates(self, current: str, history: list[str]) -> list[str]:
         past = list(dict.fromkeys(reversed(history[:-1])))
-        links = get_links(current) or []
+        links = self.wiki_client.get_links(current) or []
         filtered_links = [link for link in links if self._allowed_link(link)]
         max_links = self.config.game.max_links
         if max_links > 0 and len(filtered_links) > max_links:
@@ -308,6 +310,14 @@ class WikipediaGolfRunner:
             if cand == move:
                 return move, True
         return move, False
+
+    def _build_wiki_notice(self, wiki_name: str) -> str | None:
+        if not wiki_name or wiki_name == "Wikipedia":
+            return None
+        return (
+            f"Wikipediaではなく{wiki_name}を使用してプレイします。"
+            "Wikipedia固有の知識は適用できない可能性があるため注意してください。"
+        )
 
     def _clean_book_text(self, text: str) -> str:
         cleaned = text.strip()
