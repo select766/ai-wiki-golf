@@ -65,7 +65,7 @@ wiki:
 すべて `ai-wiki-golf` CLI から実行します。
 
 - `ai-wiki-golf run experiments/gemini`
-  - 初期攻略本生成 → ループ実行 → `books/{i}.txt`, `logs/{i}.yaml` を出力
+  - 初期攻略本生成 → ループ実行 → `books/{i}.txt`, `logs/{i}.yaml` を出力（途中で失敗しても既存の攻略本を読み直し、未完了のiterationのみ再実行）
 - `ai-wiki-golf evaluate experiments/gemini`
   - `books/{i}.txt (i=1,21,41,61,81)` を対象に10組データで評価し、`evaluates/*.yaml` を保存
 - `ai-wiki-golf eval-stats experiments/gemini`
