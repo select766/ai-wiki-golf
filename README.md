@@ -68,8 +68,10 @@ wiki:
   - 初期攻略本生成 → ループ実行 → `books/{i}.txt`, `logs/{i}.yaml` を出力
 - `ai-wiki-golf evaluate experiments/gemini`
   - `books/{i}.txt (i=1,21,41,61,81)` を対象に10組データで評価し、`evaluates/*.yaml` を保存
+- `ai-wiki-golf eval-stats experiments/gemini`
+  - `evaluates/*.yaml` を集計し、book番号ごとの平均成功率と試行数を表示
 - `ai-wiki-golf viz experiments/gemini`
-  - Gradioダッシュボードを起動し、過去ログや攻略本を閲覧
+  - Gradioダッシュボードを起動し、過去ログや攻略本に加えて評価ログと成功率サマリーも閲覧
 
 ## ログ形式
 `logs/{i}.yaml` は以下情報を含みます。
