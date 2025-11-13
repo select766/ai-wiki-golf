@@ -38,6 +38,9 @@ def evaluate_books(experiment_dir: str) -> None:
     for idx in target_indices:
         guide = (books_dir / f"{idx}.txt").read_text(encoding="utf-8")
         for pair_idx, pair in enumerate(pairs, start=1):
+            log_path = eval_dir / f"book_{idx:02d}_pair_{pair_idx:02d}.yaml"
+            if log_path.exists():
+                continue
             outcome = runner.play(
                 guide_text=guide,
                 start=pair["start"],
@@ -47,7 +50,6 @@ def evaluate_books(experiment_dir: str) -> None:
             payload = _build_log_payload(config, outcome)
             payload["book_index"] = idx
             payload["pair"] = pair
-            log_path = eval_dir / f"book_{idx:02d}_pair_{pair_idx:02d}.yaml"
             log_path.write_text(yaml.safe_dump(payload, allow_unicode=True), encoding="utf-8")
 
 
