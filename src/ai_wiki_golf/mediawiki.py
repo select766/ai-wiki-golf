@@ -65,11 +65,14 @@ class MediaWikiClient:
         while True:
             resp = requests.get(self.api_url, query, headers=HEADERS, timeout=30)
             result = resp.json()
-            for _, page_info in result["query"]["pages"].items():
+            for _, page_info in result.get("query", {}).get("pages", {}).items():
                 if "missing" in page_info:
                     return None
+                links = page_info.get("links", [])
+                if not links:
+                    continue
                 page_links[page_info["title"].strip()].extend(
-                    [p["title"].strip() for p in page_info["links"]]
+                    [p["title"].strip() for p in links if "title" in p]
                 )
             if cont := result.get("continue"):
                 query.update(cont)
