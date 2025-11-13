@@ -7,7 +7,7 @@ import requests
 
 API_URL = "https://ja.wikipedia.org/w/api.php"
 HEADERS = {
-    "User-Agent": "ai-wiki-golf/0.1 (contact: codex@example.com)",
+    "User-Agent": "ai-wiki-golf/0.1 (contact: select766@outlook.jp)",
 }
 
 
